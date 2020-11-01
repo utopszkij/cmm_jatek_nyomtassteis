@@ -87,11 +87,37 @@ function cmm_jatek_nyomtassteis_init(){
 	 */
 	function cmm_jatek_nyomtassteis_admin() {
 		include __DIR__.'/readme.html';
+		if (isset($_POST['prisonIcon'])) {
+		    update_option('cmm_jatek_useMapIcons',$_POST['useMapIcons']);
+		    update_option('cmm_jatek_prisonMapIcon',$_POST['prisonIcon']);
+		    update_option('cmm_jatek_warMapIcon',$_POST['warIcon']);
+		    update_option('cmm_jatek_freeMapIcon',$_POST['freeIcon']);
+		}
+		$useMapIcons = get_option('cmm_jatek_useMapIcons',0);
+		$prisonIcon = get_option('cmm_jatek_prisonMapIcon',31);
+		$warIcon =  get_option('cmm_jatek_warMapIcon',30);
+		$freeIcon =  get_option('cmm_jatek_freeMapIcon',21);
+		?>
+		<form method="post" action="#">
+			<h4>ultimate map (ums) beállítás</h4>
+			<p><input type="checkbox" name="useMapIcons" value="1"<?php if ($useMapIcons == 1) echo ' checked="checked"'; ?> />
+				Modosit Ultimate Map ikonokat</p>
+			<p>Ha be van jelölve akkor a [free] híváskor a title=településnév UMAP ikonokat módosítja a számitás eredménye alapján.
+			</p>
+			<p>Rabságban UMS ikon_id:<br />
+                <input type="text" name="prisonIcon" value="<?php echo $prisonIcon; ?>" /></p> 
+			<p>Részben szabad UMS ikon_id:<br />
+                <input type="text" name="warIcon" value="<?php echo $warIcon; ?>" /></p> 
+			<p>Szabad UMS ikon_id:<br />
+                <input type="text" name="freeIcon" value="<?php echo $freeIcon; ?>" /></p>
+            <p><button type="submit">Tárol</button></p>     
+		</form>
+		<?php 
 	}
 	add_action('admin_menu', 'cmm_jatek_nyomtassteis_plugin_create_menu');
 	function cmm_jatek_nyomtassteis_plugin_create_menu() {
 	    add_options_page("cmm_jatek_nyomtassteis WordPress bővítmény", "cmm_jatek_nyomtassteis WordPress bővítmény", 1,
-	        AREAMANAGER, "cmm_jatek_nyomtassteis_admin");
+	        "cmm_jatek_nyomtassteis_admin", "cmm_jatek_nyomtassteis_admin");
 	}    
 }
 
@@ -169,6 +195,7 @@ function cmm_jatek_nyomtassteis_sc_init($atts):string {
 
 	// lezárt rendelések feldolgozása
    $place = $_SESSION['place'];
+   $count = $_SESSION['count'];
    $validDate = str_replace('.','',$_SESSION['date']);	
 	$res = $model->realisedTotal('quantity',
 		["city" => $place, "validDate" => $validDate]);
@@ -202,6 +229,22 @@ function cmm_jatek_nyomtassteis_sc_init($atts):string {
 	
 	$_SESSION['free'] = $free;	
 	// return 'init '.json_encode($_SESSION);
+	
+	// Ums marker módosítás
+	$useMapIcons = get_option('cmm_jatek_useMapIcons',0);
+	$prisonIcon = get_option('cmm_jatek_prisonMapIcon',31);
+	$warIcon =  get_option('cmm_jatek_warMapIcon',30);
+	$freeIcon =  get_option('cmm_jatek_freeMapIcon',21);
+	if ($useMapIcons == 1) {
+	    if ($free == 0) {
+	        $model->updateUmsMarker($_SESSION['place'], $prisonIcon);
+	    } else if ($free < $count) {
+	        $model->updateUmsMarker($_SESSION['place'], $warIcon);
+	    } else {
+	        $model->updateUmsMarker($_SESSION['place'], $freeIcon);
+	    }
+	}
+	
 	return $_SESSION['count'];
 }
 

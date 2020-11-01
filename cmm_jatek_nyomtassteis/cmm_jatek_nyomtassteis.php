@@ -1,9 +1,9 @@
 <?php
 /**
 * Plugin Name: cmm_jatek_nyomtassteis
-* Plugin URI: http://www.github.com/utopszkij/
+* Plugin URI: http://www.github.com/utopszkij/cmm_jatek_nyomtassteis
 * Description: Kiegészítés woocommerce -hez, szabd/rab kijelzés, köszönet nagy vásárlásért, település felszabaditás jelzése. 
-* Version: 1.00.00
+* Version: 1.0 ß-test
 * Author: Fogler Tibor
 * Author URI: http://www.github.com/utopszkij
 *
@@ -81,18 +81,17 @@ function cmm_jatek_nyomtassteis_init(){
     add_shortcode('cmm_prison', 'cmm_jatek_nyomtassteis_sc_prison');
     add_shortcode('cmm_thanks', 'cmm_jatek_nyomtassteis_sc_thanks');
     add_shortcode('cmm_victory', 'cmm_jatek_nyomtassteis_sc_victory');
-    
+	
 	/**
-	 * ez a plugin admin oldali fő programja,
-	 * beépítve az admin oldal Beállítások menü alá
+	 * plugin admin oldali beépítve az admin oldal Beállítások menü alá
 	 */
 	function cmm_jatek_nyomtassteis_admin() {
 		include __DIR__.'/readme.html';
 	}
 	add_action('admin_menu', 'cmm_jatek_nyomtassteis_plugin_create_menu');
 	function cmm_jatek_nyomtassteis_plugin_create_menu() {
-	    add_options_page("cmm_jatek_nyomtassteis WordPress bővítmény", "cmm_jatek_nyomtassteis bővitmény", 1,
-	        "cmm_jatek_nyomtassteis", "cmm_jatek_nyomtassteis_admin");
+	    add_options_page("cmm_jatek_nyomtassteis WordPress bővítmény", "cmm_jatek_nyomtassteis WordPress bővítmény", 1,
+	        AREAMANAGER, "cmm_jatek_nyomtassteis_admin");
 	}    
 }
 
@@ -188,7 +187,7 @@ function cmm_jatek_nyomtassteis_sc_init($atts):string {
 		if ($productInfo) {
 			if (($productInfo->valid_start <= $validDate) &
 			    ($productInfo->valid_end >= $validDate)) {
-			    $free = $free + $quantity * $productInfo->package;	
+			    $free = $free + ($quantity * (0 + $productInfo->package));	
 	      } 
       }
 	}		

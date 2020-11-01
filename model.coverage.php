@@ -323,8 +323,8 @@ class CoverageModel extends Model {
 	 * @retrun object {id, title, price, package, valid_start, valid_end, unit}
 	 */    
     public function read(int $id) {
-    	global $wpdb;
-    	$sql = 'select p.ID,
+        global $wpdb;
+        $sql = 'select p.ID,
     	p.post_title,
     	m0.meta_value price,
     	m1.meta_value package, 
@@ -346,6 +346,17 @@ class CoverageModel extends Model {
 			$result = false;
 		}    	
 		return $result;    	
+    }
+    
+    /**
+     * UMS marker icon módosítása
+     * @param string $title
+     * @param int $icon
+     */
+    public function updateUmsMarker(string $title, int $icon) {
+        global $wpdb;
+        $sql = 'update '.$wpdb->prefix.'ums_markers set icon='.$icon.' where title="'.$title.'"';
+        $wpdb->query($sql);        
     }
 } // class
 ?>
