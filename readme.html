@@ -1,0 +1,139 @@
+<h2 class="western">
+cmm_jatek_nyomtassteis bővítmény</h2>
+<p style="margin-left: 0.74cm">Ez a bővítmény speciálisan a
+jatek.nyomtassteis.hu oldalhoz készült. Feladata a települések
+család számának, felszabadított számnak és rabságban lévő
+számnak a kijelzése, tovább a nagy összegű megjegyzések
+audió-vizuális &quot;megköszönése&quot;, a település teljes
+felszabadításának audió-vizuális kijelzése.</p>
+<p style="margin-left: 0.74cm">A lezárt megrendeléseknél a
+szállítási cím határozza meg, hogy melyik településhez kerül
+beszámításra. A kosárban lévő tételeknél az user által
+utoljára megjelenített &quot;kiemelt település&quot; oldal
+határozza meg hová számítjuk be. A szállítási cím képernyőn
+történő megadáshoz a program alapértelmezésként felhozza a
+user által utoljára megjelenített &quot;kiemelt település&quot;
+oldal &quot;title&quot; értékét. 
+</p>
+<h3 class="western">Licensz: GNU/GPL</h3>
+<h3 class="western" style="margin-left: 0.74cm">A termékekhez
+customer field mezőket kell felvenni és az értékeiket megadni</h3>
+<ul>
+	<ul>
+		<li><p style="margin-bottom: 0cm">&quot;package&quot; numeric
+		default 1 (csomag példányszám) 
+		</p>
+		<li><p style="margin-bottom: 0cm">&quot;valid_start&quot;
+		datepicker érvényesség kezdő dátuma formátum:&quot;Y.m.d&quot;
+				</p>
+		<li><p>&quot;valid_end&quot; datepicker érvényesség vég dátuma
+		formátum:&quot;Y.m.d&quot; 
+		</p>
+	</ul>
+</ul>
+<h3 class="western">További követelmények</h3>
+<p style="margin-left: 0.74cm">A különszámok, illetve a saját
+célra történő megrendeléseket jelentő termékeknél a
+„valid_start” és a „valid_end” legyen üres, vagy egy már
+elmúlt időszakot tartalmazzon (pl. 1900.01.01 - 1900.01.01)</p>
+<p style="margin-left: 0.74cm">Az is megengedett, hogy a
+különszámoknál a megjelenést követő néhány napos
+érvényességet állít be az admin. Ez esetben a megadott néhány
+napban a &quot;felszabadított&quot; számba a különszám
+előfizetések is be lesznek számolva.</p>
+<p style="margin-left: 0.74cm">Termék változatokat ne használjunk.</p>
+<p style="margin-left: 0.74cm">A &quot;virtuális termék&quot;,
+&quot;letölthető termék&quot; NE legyen beállítva.</p>
+<p style="margin-left: 0.74cm">A kiemelt településekhez tartozó
+oldalakban a &quot;title&quot; adat a település neve legyen.</p>
+<p style="margin-left: 0.74cm">A woocommerce -et-t úgy kell
+konfigurálni, illetve a kiemelt oldalakat kialakítani, hogy amikor
+a kiemelt település oldalon a &quot;kosárba teszem&quot; -re
+kattint akkor ezután a kosár lista jelenjen meg!</p>
+<h3 class="western">Short kódok a kiemelt település oldalakra</h3>
+<p style="margin-left: 0.74cm"><strong>FONTOS! a kiemelt település
+oldalakon kötelezően szerepelniük kell ezeknek a short kódoknak!</strong>
+</p>
+<h4 class="western" style="margin-left: 0.74cm">[cmm_init count=####
+add=### date=&quot;###.##.##&quot;]</h4>
+<p style="margin-left: 0.74cm">FONTOS ez legyen az első behívott
+short kód az oldalon! &quot;add&quot; és &quot;date&quot;
+elhagyható. A &quot;count&quot; az adott településen lévő
+&quot;családok száma&quot; adat legyen. A &quot;count&quot; input
+paraméterben megadott számot (családok száma) írja ki az
+outputra. Az &quot;add&quot; és „date” jelentését lásd
+lentebb! 
+</p>
+<h4 class="western" style="margin-left: 0.74cm">[cmm_free]</h4>
+<p style="margin-left: 0.74cm">A program a kosárba rakott tételek
+és a lezárt megrendelések alapján számítja ki a felszabadított
+családok számát. Csak azokat a termékeket figyelembe véve amik
+az aktuális dátumon (vagy az ini-ben megadotton) érvényesek
+(valid_start &lt;= vizsgált_Dátum és valid_end &gt;=
+vizsgált_Dátum) Azt nem figyeli, hogy a megrendelés fizetve van
+vagy nem.</p>
+<p style="margin-left: 0.74cm">Ha az &quot;add&quot; bemenő
+paraméter megvan adva akkor a program a kosár és lezárt
+rendelések alapján számított értékhez hozzáadja az &quot;add&quot;
+paraméterben megadottat. Ha a &quot;date&quot; meg van adva akkor
+erre a dátumra végzi a kimutatást, ha nincs megadva akkor az
+aktuális dátumra. A lezárt megrendeléseknél a szállítási cím
+határozza meg, hogy melyik településhez kerül beszámításra. A
+kosárban lévő tételeknél az user által utoljára megjelenített
+&quot;kiemelt település&quot; oldal határozza meg hová számítjuk
+be. (A szállítási cím képernyőn történő megadáshoz a
+program alapértelmezésként felhozza a user által utoljára
+megjelenített &quot;kiemelt település&quot; oldal &quot;title&quot;
+értékét.)</p>
+<p style="margin-left: 0.74cm">Ha az így számított eredmény &lt;
+0 akkor nullát ad vissza.</p>
+<p style="margin-left: 0.74cm">Ha az így számított eredmény &gt;
+családokSzáma akkor a családokSzáma -t adja vissza.</p>
+<h4 class="western" style="margin-left: 0.74cm">[cmm_prison]</h4>
+<p style="margin-left: 0.74cm">a program a &quot;count - free&quot;
+számítás eredményét adja vissza. az eredmény <br/>
+mindig &gt;=
+0 és &lt;= családokSzáma</p>
+<h3 class="western">Short kódok a kosár lista oldalra</h3>
+<p style="margin-left: 0.74cm"><strong>FONTOS! a kosár lista oldalon
+kötelezően szerepelniük kell ezeknek a short kódoknak!</strong> 
+</p>
+<h4 class="western" style="margin-left: 0.74cm">[cmm_thanks min=####
+img=&quot;xxxxxxxxx&quot; audio=&quot;xxxxx&quot;]</h4>
+<p style="margin-left: 0.74cm">Az &quot;audio&quot; elhagyható. Az
+&quot;img&quot; és &quot;audio&quot; URL cím. Akkor jeleníti meg
+az &quot;img&quot; -ben megadott url-en lévő képet és az &quot;audio&quot;
+hangot akkor játssza le ha a user kosarába lévő összes érték
+nagyobb a megadott &quot;min&quot; -nél (minden a user kosarában
+lévő terméket minden további válogatás nélkül összead)</p>
+<h4 class="western" style="margin-left: 0.74cm">[cmm_victory
+img=&quot;xxxxxxxxx&quot; audio=&quot;xxxxxxx&quot;]</h4>
+<p style="margin-left: 0.74cm">Az &quot;audio&quot; elhagyható. Az
+&quot;img&quot; és &quot;audio&quot; URL cím. Akkor jeleníti meg
+az &quot;img&quot; -ben megadott url-en lévő képet és az &quot;audio&quot;
+paraméterben lévő hangot akkor játssza le ha az utoljára
+megjelenített &quot;kiemelt település oldal&quot; &quot;title&quot;
+település; ennek a kosár tartalomnak a megrendelésével
+felszabadul (prison = 0)</p>
+<p style="margin-left: 0.74cm"><br/>
+<br/>
+
+</p>
+<h3 class="western">Telepítés</h3>
+<ul>
+	<li><p>Wordpress plugin telepítővel a cmm_jatek_nyomtassteis.zip
+	fájlt használva. 
+	</p>
+	<li><p>Plugin kezelőben bekapcsolás.</p>
+</ul>
+<h3 class="western">Frissítés</h3>
+<ul>
+	<li><p>Plugin kezelőben kikapcsolás, majd eltávolítás,</p>
+	<li><p>Újra telepítés a friss zip -fájlt használva,</p>
+	<li><p>plugin kezelőben bekapcsolás</p>
+</ul>
+<p></p>
+<p>Szerző: Fogler Tibor, Sas Tibor</p>
+<p><a href="https://github.com/utopszkij">github.com/utopszkij</a></p>
+<p><a href="mailto:tibor.fogler@gmail.com">tibor.fogler@gmail.com</a></p>
+
