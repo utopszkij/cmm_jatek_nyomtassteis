@@ -16,9 +16,8 @@ user által utoljára megjelenített &quot;kiemelt település&quot;
 oldal &quot;title&quot; értékét. 
 </p>
 <h3 class="western">Licensz: GNU/GPL</h3>
-<h3 class="western" style="margin-left: 0.74cm">A termékekhez
-customer field mezőket kell felvenni és az értékeiket megadni</h3>
-<ul>
+<h3>A termékekhez customer field mezőket kell felvenni és az értékeiket megadni</h3>
+<div style="margin-left: 0.74cm">
 	<ul>
 		<li><p style="margin-bottom: 0cm">&quot;package&quot; numeric
 		default 1 (csomag példányszám) 
@@ -30,7 +29,23 @@ customer field mezőket kell felvenni és az értékeiket megadni</h3>
 		formátum:&quot;Y.m.d&quot; 
 		</p>
 	</ul>
-</ul>
+</div>
+
+<h3>A kiemelt településhez "cmm_place" egyedi post tipust kell létrehozni, és ebbe customer field mezőket kell felvenni</h3>
+<div style="margin-left: 0.74cm">	
+	<ul>
+		<li>"cmm_contineent" select kontinens  * </li>
+		<li>"cmm_country" select ország * </li>
+		<li>"cmm_state" select megye * </li>
+		<li>"cmm_pol_regio1" string országgyűlési egyéni választó kerület</li>
+		<li>"cmm_pol_regio2" string önkormányzati választó kerület </li>
+		<li>"cmm_count" numeric családok száma</li>
+		<li>"cmm_add" numeric felszabadított család szám kezdő értéke</li>
+	</ul>
+	A * -al jeleztt adatokat a woocommerce kódrendszerével összhangban kell beállítani. 
+	lásd WC()-countries->get_allowed_countries() és WC()-countries->get_allowed_country_states()[countryCode]
+</div>
+	
 <h3 class="western">További követelmények</h3>
 <p style="margin-left: 0.74cm">A különszámok, illetve a saját
 célra történő megrendeléseket jelentő termékeknél a
@@ -50,20 +65,24 @@ oldalakban a &quot;title&quot; adat a település neve legyen.</p>
 konfigurálni, illetve a kiemelt oldalakat kialakítani, hogy amikor
 a kiemelt település oldalon a &quot;kosárba teszem&quot; -re
 kattint akkor ezután a kosár lista jelenjen meg!</p>
+<p style="margin-left: 0.74cm">Ha a webhelyen UMS ország térkép is van, akkor azon helyezzünk el markereket 
+a kiemelt településekre, ezekben a "title" a település neve legyen 
+(azonos írásmódban mint a "kiemelt település" -nél). A megrendelés lezárásakor a 
+program módosítja a szállítási cím településnek megfelelő UMS markert is.</p>
 <h3 class="western">Short kódok a kiemelt település oldalakra</h3>
 <p style="margin-left: 0.74cm"><strong>FONTOS! a kiemelt település
 oldalakon kötelezően szerepelniük kell ezeknek a short kódoknak!</strong>
 </p>
+
 <h4 class="western" style="margin-left: 0.74cm">[cmm_init count=####
 add=### date=&quot;###.##.##&quot;]</h4>
 <p style="margin-left: 0.74cm">FONTOS ez legyen az első behívott
-short kód az oldalon! &quot;add&quot; és &quot;date&quot;
-elhagyható. A &quot;count&quot; az adott településen lévő
-&quot;családok száma&quot; adat legyen. A &quot;count&quot; input
-paraméterben megadott számot (családok száma) írja ki az
-outputra. Az &quot;add&quot; és „date” jelentését lásd
-lentebb! 
+short kód az oldalon! Minden paraméter elhagyható. A &quot;count&quot; az adott településen lévő
+&quot;családok száma&quot;. A &quot;count&quot; számot (családok száma) írja ki az
+outputra. Az &quot;add&quot; és „date” jelentését lásd lentebb!
+Ha a "count" és "add" nincs megadva akkor a "product" ACF mezőkből olvassa ki. 
 </p>
+
 <h4 class="western" style="margin-left: 0.74cm">[cmm_free]</h4>
 <p style="margin-left: 0.74cm">A program a kosárba rakott tételek
 és a lezárt megrendelések alapján számítja ki a felszabadított

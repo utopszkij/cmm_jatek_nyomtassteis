@@ -21,231 +21,78 @@
 *
 * A lezárt megrendeléseket a program szállítási címben megadott településhez tartozónak tekinti, ide a program
 * alapértelmezésként felajánlja a felhasználó által  utoljára használt "kiemelt területet"-et.
+* 
+* megrendelés tárolásakor a szállítási cím település alapján modositja az ums markers táblában a 
+* title="szállítási cím települése" markerekben az "icon" -t és a "description" -t.
 */
 
-
-/* cart kezelés
-
-// $cart conditionals (if)
-WC()->cart->is_empty()
-WC()->cart->needs_payment()
-WC()->cart->show_shipping()
-WC()->cart->needs_shipping()
-WC()->cart->needs_shipping_address()
-WC()->cart->display_prices_including_tax()
- 
-// Get $cart totals
-WC()->cart->get_cart_contents_count();
-WC()->cart->get_cart_subtotal();
-WC()->cart->subtotal_ex_tax;
-WC()->cart->subtotal;
-WC()->cart->get_displayed_subtotal();
-WC()->cart->get_taxes_total();
-WC()->cart->get_shipping_total();
-WC()->cart->get_coupons();
-WC()->cart->get_coupon_discount_amount( 'coupon_code' );
-WC()->cart->get_fees();
-WC()->cart->get_discount_total();
-WC()->cart->get_total();
-WC()->cart->total;
-WC()->cart->get_tax_totals();
-WC()->cart->get_cart_contents_tax();
-WC()->cart->get_fee_tax();
-WC()->cart->get_discount_tax();
-WC()->cart->get_shipping_total();
-WC()->cart->get_shipping_taxes();
-  
-// Loop over $cart items
-foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-   $product = $cart_item['data'];
-   $product_id = $cart_item['product_id'];
-   $quantity = $cart_item['quantity'];
-   $price = WC()->cart->get_product_price( $product );
-   $subtotal = WC()->cart->get_product_subtotal( $product, $cart_item['quantity'] );
-   $link = $product->get_permalink( $cart_item );
-   // Anything related to $product, check $product tutorial
-   $meta = wc_get_formatted_cart_item_data( $cart_item );
-}
- 
-*/
-
+global $cmm_session,$cmm_ctrl;
+include_once __DIR__.'/class.coverage.php';
 /**
  * init plugin, load js és shortcode definiciók
  */ 
 add_action('init','cmm_jatek_nyomtassteis_init');
 function cmm_jatek_nyomtassteis_init(){
-	 session_start();
+    global $cmm_session, $cmm_ctrl;
+    $cmm_session = new WC_session_handler();
+	$cmm_session->init();
+	$cmm_ctrl = new CoverageController();
+	
     add_action( 'the_content', 'cmm_jatek_nyomtassteis_js');
     add_shortcode('cmm_init', 'cmm_jatek_nyomtassteis_sc_init');
     add_shortcode('cmm_free', 'cmm_jatek_nyomtassteis_sc_free');
     add_shortcode('cmm_prison', 'cmm_jatek_nyomtassteis_sc_prison');
     add_shortcode('cmm_thanks', 'cmm_jatek_nyomtassteis_sc_thanks');
     add_shortcode('cmm_victory', 'cmm_jatek_nyomtassteis_sc_victory');
+	add_action('woocommerce_thankyou','cmm_jatek_nyomtassteis_thankyou');
 	
-	/**
-	 * plugin admin oldali beépítve az admin oldal Beállítások menü alá
-	 */
-	function cmm_jatek_nyomtassteis_admin() {
-		include __DIR__.'/readme.html';
-		if (isset($_POST['prisonIcon'])) {
-		    update_option('cmm_jatek_useMapIcons',$_POST['useMapIcons']);
-		    update_option('cmm_jatek_prisonMapIcon',$_POST['prisonIcon']);
-		    update_option('cmm_jatek_warMapIcon',$_POST['warIcon']);
-		    update_option('cmm_jatek_freeMapIcon',$_POST['freeIcon']);
-		}
-		$useMapIcons = get_option('cmm_jatek_useMapIcons',0);
-		$prisonIcon = get_option('cmm_jatek_prisonMapIcon',31);
-		$warIcon =  get_option('cmm_jatek_warMapIcon',30);
-		$freeIcon =  get_option('cmm_jatek_freeMapIcon',21);
-		?>
-		<form method="post" action="#">
-			<h4>ultimate map (ums) beállítás</h4>
-			<p><input type="checkbox" name="useMapIcons" value="1"<?php if ($useMapIcons == 1) echo ' checked="checked"'; ?> />
-				Modosit Ultimate Map ikonokat</p>
-			<p>Ha be van jelölve akkor a [free] híváskor a title=településnév UMAP ikonokat módosítja a számitás eredménye alapján.
-			</p>
-			<p>Rabságban UMS ikon_id:<br />
-                <input type="text" name="prisonIcon" value="<?php echo $prisonIcon; ?>" /></p> 
-			<p>Részben szabad UMS ikon_id:<br />
-                <input type="text" name="warIcon" value="<?php echo $warIcon; ?>" /></p> 
-			<p>Szabad UMS ikon_id:<br />
-                <input type="text" name="freeIcon" value="<?php echo $freeIcon; ?>" /></p>
-            <p><button type="submit">Tárol</button></p>     
-		</form>
-		<?php 
-	}
 	add_action('admin_menu', 'cmm_jatek_nyomtassteis_plugin_create_menu');
 	function cmm_jatek_nyomtassteis_plugin_create_menu() {
 	    add_options_page("cmm_jatek_nyomtassteis WordPress bővítmény", "cmm_jatek_nyomtassteis WordPress bővítmény", 1,
 	        "cmm_jatek_nyomtassteis_admin", "cmm_jatek_nyomtassteis_admin");
-	}    
+	} 
+}
+
+/**
+ * plugin admin oldal Beállítások menüpont
+ */
+function cmm_jatek_nyomtassteis_admin() {
+    global $cmm_ctrl;
+    $cmm_ctrl->jatek_nyomtassteis_admin();
+}
+
+/**
+* rendelés elküldést megköszönő képernyő végén aktiválódik ez a rutin.
+* 'woocommerce_thankyou' horgony asktivizálja.
+* funkciókja: ums markerekben modosítja az icont -t és a description -t
+* @param int $orderId
+*/
+function cmm_jatek_nyomtassteis_thankyou(int $orderId) {
+    global $cmm_ctrl;
+    $cmm_ctrl->jatek_nyomtassteis_thankyou($orderId);
 }
 
 /**
 * js betöltés. Funkciója: a sessionban lévő 'place' adat alapján a rendelés szállítási cím kitöltése.
 */
 function cmm_jatek_nyomtassteis_js($content) {
-	 	if (isset($_SESSION['place'])) {
-			echo '
-			<script type="text/javascript">
-			jQuery(function() {
-				if (jQuery("#shipping_city")) {
-					jQuery("#shipping_city").val("'.$_SESSION['place'].'");
-					jQuery("#shipping_address_1").val("Futrinka u. 1");
-					jQuery("#shipping_postcode").val("0000");
-					jQuery("#shipping_last_name").val("Mézga");
-					jQuery("#shipping_first_name").val("család");
-				}		
-			})		
-			</script>		
-			';
-		}	 
-		return $content;
+    global $cmm_ctrl;
+    return $cmm_ctrl->jatek_nyomtassteis_js($content);
 }
 
-/**
-* currency string eltávolítása érték stringből
-*/
-function cmm_stripCurrency($cartTotal) {	
-	$cartTotal = strip_tags($cartTotal);
-	$cartTotal = str_replace(' ','',$cartTotal);
-	$cartTotal = str_replace('&nbsp;','',$cartTotal);
-	$cartTotal = str_replace('&#70;','',$cartTotal);
-	$cartTotal = str_replace('&#116;','',$cartTotal);
-	$cartTotal = str_replace('Ft','',$cartTotal);
-	$cartTotal = str_replace('$','',$cartTotal);
-	$cartTotal = str_replace('€','',$cartTotal);
-	$cartTotal = trim($cartTotal);
-	$cartTotal = 0 + str_replace(',','.',$cartTotal);
-	return $cartTotal;
-}	
-	
-
-
-// ================ shotcode -ok a kiemelt területek oldalra ==================================
+// ================ shotcode -ok a kiemelt területek oldalakra ==================================
 
 /**
 * jatek_nyomtassteis short code rendszer init KÖTELEZŐ HASZNÁLNI, EZ LEGYEN AZ ELSŐ!
-* @param array ["count" => ####, "add" => ###, "date" => "yyyy.mm.dd"]  
+* @param array ["count" => ####, "add" => ###, "date" => "yyyy.mm.dd"] minden paraméter opcionális 
 * @return string html kód
 * - $post->post_title a place adat
 * - free számításda és tárolása sessionba
 * - sessionba: place, count, add, date, freee 
 */
-function cmm_jatek_nyomtassteis_sc_init($atts):string {
-	if (is_admin()) {
-		return '';	
-	}
-	include_once __DIR__.'/model.coverage.php';	
-	global $post;
-	$model = new CoverageModel(false);
-	if (!isset($atts['date'])) {
-			$atts['date'] = date('Y.m.d');
-	}
-	if (!isset($atts['count'])) {
-			$atts['count'] = 0;
-	}
-	if (!isset($atts['add'])) {
-			$atts['add'] = 0;
-	}
-	$_SESSION['place'] = $post->post_title;
-	$_SESSION['date'] = $atts['date'];
-	$_SESSION['count'] = $atts['count'];
-	$_SESSION['add'] = $atts['add'];
-
-	// lezárt rendelések feldolgozása
-   $place = $_SESSION['place'];
-   $count = $_SESSION['count'];
-   $validDate = str_replace('.','',$_SESSION['date']);	
-	$res = $model->realisedTotal('quantity',
-		["city" => $place, "validDate" => $validDate]);
-	if (count($res) > 0) {
-		$free = 0 + $res[0]->sumQuantity + $_SESSION['add'];
-	} else {
-		$free = 	$_SESSION['add'];
-	}	
-
-	// cart (kosár) feldolgozása
-	foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-	   // $product = $cart_item['data'];
-	   $product_id = $cart_item['product_id'];
-	   $quantity = $cart_item['quantity'];
-		$productInfo = $model->read($product_id); 
-		if ($productInfo) {
-			if (($productInfo->valid_start <= $validDate) &
-			    ($productInfo->valid_end >= $validDate)) {
-			    $free = $free + ($quantity * (0 + $productInfo->package));	
-	      } 
-      }
-	}		
-
-   // határértékek kezelése
-	if ($free < 0) {
-			$free = 0;	
-	}
-	if ($free > $_SESSION['count']) {
-			$free = $_SESSION['count'];	
-	}
-	
-	$_SESSION['free'] = $free;	
-	// return 'init '.json_encode($_SESSION);
-	
-	// Ums marker módosítás
-	$useMapIcons = get_option('cmm_jatek_useMapIcons',0);
-	$prisonIcon = get_option('cmm_jatek_prisonMapIcon',31);
-	$warIcon =  get_option('cmm_jatek_warMapIcon',30);
-	$freeIcon =  get_option('cmm_jatek_freeMapIcon',21);
-	if ($useMapIcons == 1) {
-	    if ($free == 0) {
-	        $model->updateUmsMarker($_SESSION['place'], $prisonIcon);
-	    } else if ($free < $count) {
-	        $model->updateUmsMarker($_SESSION['place'], $warIcon);
-	    } else {
-	        $model->updateUmsMarker($_SESSION['place'], $freeIcon);
-	    }
-	}
-	
-	return $_SESSION['count'];
+function cmm_jatek_nyomtassteis_sc_init($atts = []):string {
+    global $cmm_ctrl;
+    return $cmm_ctrl->jatek_nyomtassteis_sc_init($atts);
 }
 
 /*
@@ -254,10 +101,8 @@ function cmm_jatek_nyomtassteis_sc_init($atts):string {
 * @return string html kód
 */ 
 function cmm_jatek_nyomtassteis_sc_free($atts):string {
-	if (is_admin()) {
-		return '';	
-	}
-	return $_SESSION['free'];
+    global $cmm_ctrl;
+    return $cmm_ctrl->jatek_nyomtassteis_sc_free($atts);
 }
 
 /**
@@ -266,13 +111,11 @@ function cmm_jatek_nyomtassteis_sc_free($atts):string {
 * @return string html kód
 */
 function cmm_jatek_nyomtassteis_sc_prison($atts):string {
-	if (is_admin()) {
-		return '';	
-	}
-	return (0 + $_SESSION['count'] - $_SESSION['free']);
+    global $cmm_ctrl;
+    return $cmm_ctrl->jatek_nyomtassteis_sc_prison($atts);
 }
 
-// =========================== shortcode -ok a kosár lista oldalra ============================================
+// =========================== shortcode -ok a kosár lista oldalakra ============================================
 
 /**
 * szükség esetén köszönő img megjelenítése
@@ -282,27 +125,8 @@ function cmm_jatek_nyomtassteis_sc_prison($atts):string {
 * - ha a kosrban lévő érték >= min akkor kép megjelenítés és hang lejátszás
 */
 function cmm_jatek_nyomtassteis_sc_thanks($atts):string {
-	if (is_admin()) {
-		return '';	
-	}
-	$result = '';
-	if (!isset($atts['img'])) {
-		$atts['img'] = '';	
-	}
-	if (!isset($atts['audio'])) {
-		$atts['audio'] = '';	
-	}
-	if (!isset($atts['min'])) {
-		$atts['min'] = '100000';	
-	}
-	$cartTotal = cmm_stripCurrency(WC()->cart->get_total());
-	if ($cartTotal >= (0 + $atts['min'])) {
-		$result .= '<div style="display:none"><iframe name="ifrmThanks" src="'.$atts['audio'].'"></iframe></div>';
-		if ($atts['img'] != '') {
-			$result .= '<img class="thanks" src="'.$atts['img'].'" />'; 	
-		}
-	}
-	return $result;
+    global $cmm_ctrl;
+    return $cmm_ctrl->jatek_nyomtassteis_sc_thanks($atts);
 }
 
 /**
@@ -316,59 +140,8 @@ function cmm_jatek_nyomtassteis_sc_thanks($atts):string {
 * - sessionból newPlace törlése
 */
 function cmm_jatek_nyomtassteis_sc_victory($atts):string {
-	if (is_admin()) {
-		return '';	
-	}
-	include_once __DIR__.'/model.coverage.php';	
-	$model = new CoverageModel(false);
-	
-	$result = '';
-	if (!isset($atts['img'])) {
-		$atts['img'] = '';	
-	}
-	if (!isset($atts['audio'])) {
-		$atts['audio'] = '';	
-	}
-	if ((isset($_SESSION['count']) & (isset($_SESSION['free'])))) {
-		$count = 0 + $_SESSION['count'];
-		$free = 0 + $_SESSION['free'];
-		if ($free < $count) {
-			
-			// lezárt rendelések feldolgozása
-			$place = $_SESSION['place'];
-			$validDate = str_replace('.','',$_SESSION['date']);	
-			$res = $model->realisedTotal('quantity',
-					["city" => $place, "validDate" => $validDate]);
-			if (count($res) > 0) {
-					$free = 0 + $res[0]->sumQuantity + $_SESSION['add'];
-			} else {
-					$free = 	$_SESSION['add'];
-			}	
-			
-			// cart (kosár) feldolgozása
-			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-				   // $product = $cart_item['data'];
-				   $product_id = $cart_item['product_id'];
-				   $quantity = $cart_item['quantity'];
-					$productInfo = $model->read($product_id); 
-					if ($productInfo) {
-						if (($productInfo->valid_start <= $validDate) &
-						    ($productInfo->valid_end >= $validDate)) {
-						    $free = $free + $quantity * $productInfo->package;	
-				      } 
-			      }
-			}	
-					
-			if ($free >= $count) {
-				// a kosár tartalmával együtt most felszabadul
-				$result .= '<div style="display:none"><iframe name="ifrmVictory" src="'.$atts['audio'].'"></iframe></div>';
-				if ($atts['img'] != '') {
-					$result .= '<img class="victory" src="'.$atts['img'].'" />'; 	
-				}
-			}
-		} // eddig nem volt szabad ez a település
-	}
-	return $result;
+    global $cmm_ctrl;
+    return $cmm_ctrl->jatek_nyomtassteis_sc_victory($atts);
 }
 
 ?>

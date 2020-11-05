@@ -1,0 +1,29 @@
+Országok:
+
+WC()->counties->get_allowed_countries()  ---> ["CODE" => "title", ......]
+
+HU : Hungary
+
+Megyék:
+WC()->counties->get_allowed_country_states()['CODE']  ---> ["CODE" => "title", ......]
+
+BK : Bács-Kiskun
+BE : Békés
+BA : Baranya
+BZ : Borsod-Abaúj-Zemplén
+BU : Budapest
+CS : Csongrád
+FE : Fejér
+GS : Győr-Moson-Sopron
+HB : Hajdú-Bihar
+HE : Heves
+JN : Jász-Nagykun-Szolnok
+KE : Komárom-Esztergom
+NO : Nógrád
+PE : Pest
+SO : Somogy
+SZ : Szabolcs-Szatmár-Bereg
+TO : Tolna
+VA : Vas,
+VE : Veszprém
+ZA : Zala
