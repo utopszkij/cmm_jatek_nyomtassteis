@@ -1,9 +1,9 @@
 <?php
 /**
 * Plugin Name: cmm_jatek_nyomtassteis
-* Plugin URI: http://www.github.com/utopszkij/
+* Plugin URI: http://www.github.com/utopszkij/cmm_jatek_nyomtassteis
 * Description: Kiegészítés woocommerce -hez, szabd/rab kijelzés, köszönet nagy vásárlásért, település felszabaditás jelzése. 
-* Version: 1.0
+* Version: 1.0 ß-test
 * Author: Fogler Tibor
 * Author URI: http://www.github.com/utopszkij
 *
@@ -81,6 +81,19 @@ function cmm_jatek_nyomtassteis_init(){
     add_shortcode('cmm_prison', 'cmm_jatek_nyomtassteis_sc_prison');
     add_shortcode('cmm_thanks', 'cmm_jatek_nyomtassteis_sc_thanks');
     add_shortcode('cmm_victory', 'cmm_jatek_nyomtassteis_sc_victory');
+	 add_action('woocommerce_thankyou','cmm_jatek_nyomtassteis_thankyou');
+	 
+	/**
+	 * plugin admin oldali beépítve az admin oldal Beállítások menü alá
+	 */
+	function cmm_jatek_nyomtassteis_admin() {
+		include __DIR__.'/readme.html';
+	}
+	add_action('admin_menu', 'cmm_jatek_nyomtassteis_plugin_create_menu');
+	function cmm_jatek_nyomtassteis_plugin_create_menu() {
+	    add_options_page("cmm_jatek_nyomtassteis WordPress bővítmény", "cmm_jatek_nyomtassteis WordPress bővítmény", 1,
+	        AREAMANAGER, "cmm_jatek_nyomtassteis_admin");
+	}    
 }
 
 /**
@@ -109,20 +122,20 @@ function cmm_jatek_nyomtassteis_js($content) {
 * currency string eltávolítása érték stringből
 */
 function cmm_stripCurrency($cartTotal) {	
+	
 	$cartTotal = strip_tags($cartTotal);
-	$cartTotal = str_replace(' ','',$cartTotal);
-	$cartTotal = str_replace('&nbsp;','',$cartTotal);
-	$cartTotal = str_replace('&#70;','',$cartTotal);
-	$cartTotal = str_replace('&#116;','',$cartTotal);
-	$cartTotal = str_replace('Ft','',$cartTotal);
-	$cartTotal = str_replace('$','',$cartTotal);
-	$cartTotal = str_replace('€','',$cartTotal);
-	$cartTotal = trim($cartTotal);
-	$cartTotal = 0 + str_replace(',','.',$cartTotal);
+	$cartTotal = html_entity_decode ($cartTotal);
+	$cartTotal = preg_replace('/[^0-9,]/','',$cartTotal);
+	$cartTotal = str_replace(',','.',$cartTotal);
 	return $cartTotal;
 }	
 	
-
+/**
+* rendelés elküldést megköszönő képernyő végén aktiválódik
+*/
+function cmm_jatek_nyomtassteis_thankyou($orderId) {
+	// echo '<br>thankyou orderId = '.$orderId.'<br>';
+}
 
 // ================ shotcode -ok a kiemelt területek oldalra ==================================
 
