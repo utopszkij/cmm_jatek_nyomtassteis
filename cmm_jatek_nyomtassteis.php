@@ -34,6 +34,19 @@ include_once __DIR__.'/class.coverage.php';
 add_action('init','cmm_jatek_nyomtassteis_init');
 function cmm_jatek_nyomtassteis_init(){
     global $cmm_session, $cmm_ctrl;
+    
+    //+ AJAX backends
+    if (isset($_GET['cmm_get_states'])) {
+        echo json_encode( WC()->countries->get_allowed_country_states()[$_GET["cmm_get_states"]]);
+        exit();
+    }
+    if (isset($_GET['cmm_get_countries'])) {
+        echo json_encode( WC()->countries->get_allowed_countries());
+        exit();
+    }
+    //+ AJAX backends
+    
+    
     $cmm_session = new WC_session_handler();
 	$cmm_session->init();
 	$cmm_ctrl = new CoverageController();
@@ -45,7 +58,17 @@ function cmm_jatek_nyomtassteis_init(){
     add_shortcode('cmm_thanks', 'cmm_jatek_nyomtassteis_sc_thanks');
     add_shortcode('cmm_victory', 'cmm_jatek_nyomtassteis_sc_victory');
 	add_action('woocommerce_thankyou','cmm_jatek_nyomtassteis_thankyou');
-	
+	add_action('acf/render_field/name=cmm_country','cmm_acfextends0',15);
+	function cmm_acfextends0($field) {
+	    global $cmm_ctrl;
+	    $cmm_ctrl->countryFieldId = $field['id'];
+	}
+	add_action('acf/render_field/name=cmm_state','cmm_acfextends1',16);
+	function cmm_acfextends1($field) {
+	    global $cmm_ctrl;
+	    $cmm_ctrl->stateFieldId = $field['id'];
+	    $cmm_ctrl->placeFormJs();
+	}
 	add_action('admin_menu', 'cmm_jatek_nyomtassteis_plugin_create_menu');
 	function cmm_jatek_nyomtassteis_plugin_create_menu() {
 	    add_options_page("cmm_jatek_nyomtassteis WordPress bővítmény", "cmm_jatek_nyomtassteis WordPress bővítmény", 1,

@@ -18,6 +18,7 @@ class CoverageController {
      * plugin admin oldal Beállítások menüpont
      */
     public function jatek_nyomtassteis_admin() {
+        global $wpdb;
         if (isset($_POST['prisonIcon'])) {
             update_option('cmm_jatek_useMapIcons',$_POST['useMapIcons']);
             update_option('cmm_jatek_prisonMapIcon',$_POST['prisonIcon']);
@@ -44,12 +45,26 @@ class CoverageController {
                     <input type="text" name="freeIcon" value="<?php echo $freeIcon; ?>" /></p>
                 <p><button type="submit">Tárol</button></p>     
     		</form>
+    		
+    		<h4>Ikonok:</h4>
     	<?php 
+    	$icons = $wpdb->get_results('select id, path from '.$wpdb->prefix.'ums_icons');
+    	foreach ($icons as $icon) {
+    		 if (substr($icon->path,0,4) == 'http') {
+    	    	echo '<div style="display:inline-block; width:auto">&nbsp;'.$icon->id.'&nbsp;<img style="width:20px"
+    			src="'.$icon->path.'" />
+                </div>';
+    		 } else {
+    	    	echo '<div style="display:inline-block; width:auto">&nbsp;'.$icon->id.'&nbsp;<img style="width:20px"
+    			src="'.site_url().'/wp-content/plugins/ultimate-maps-by-supsystic/modules/icons/icons_files/def_icons/'.$icon->path.'" />
+                </div>';
+          }      
+    	}
     }
     
     /**
     * rendelés elküldést megköszönő képernyő végén aktiválódik ez a rutin.
-    * 'woocommerce_thankyou' horgony asktivizálja.
+    * woocommerce_thankyou horgony asktivizálja.
     * funkciókja: ums markerekben modosítja az icont -t és a description -t
     * @param int $orderId
     */
@@ -109,13 +124,58 @@ class CoverageController {
         } // place létezik
     }
     
+    /**
+     * echo JS kód a place editor képernyőre
+     * feltölti az ország választó select -et,
+     * ország változtatáskor beolvassa a hozzá tartozó megye választékot
+     */
+    public function placeFormJs() {
+        ?>
+        <script type="text/javascript">
+        	var countryFieldId = "<?php echo $this->countryFieldId; ?>";
+        	var stateFieldId = "<?php echo $this->stateFieldId; ?>";
+            jQuery(function() {
+                var country = jQuery("#"+countryFieldId).val();
+                jQuery("#"+countryFieldId).html("<option>Türelmet kérek...</option>");
+                jQuery.get("#",{cmm_get_countries: 1}, function(result) {
+                    result = JSON.parse(result);
+	                jQuery("#"+countryFieldId).html("");
+                    for (const property in result) {
+                        jQuery("#"+countryFieldId).append('<option value="'+property+'">'+result[property]+'</option>');
+                    }  
+                    country = jQuery("#"+countryFieldId).val(country);
+                });
+                jQuery("#"+countryFieldId).change(function() {
+	                var country = jQuery("#"+countryFieldId).val();
+                    jQuery("#"+stateFieldId).html("<option>Türelmet kérek...</option");
+                    jQuery.get("#",{cmm_get_states: country}, function(result) {
+                    	if (result.substring(0,1) == "{") {
+	                        result = JSON.parse(result);
+                    	} else {
+                    		result = {};
+                    	}
+                        if (result.count <= 0) {
+                        	jQuery("#"+stateFieldId).html("");
+                            jQuery("#"+stateFieldId).append('<option value=""></option>');
+                        } else {
+                       		jQuery("#"+stateFieldId).html("");
+                        	for (const property in result) {
+                            	jQuery("#"+stateFieldId).append('<option value="'+property+'">'+result[property]+'</option>');
+                        	} 
+                        }	 
+                    });
+                });
+            });
+        </script>
+        <?php
+    }
     
     /**
-    * js betöltés. Funkciója: a sessionban lévő 'place' adat alapján a rendelés szállítási cím kitöltése.
+    * js betöltés. Funkciója: a sessionban lévő place adat alapján a rendelés szállítási cím kitöltése.
     */
     public function jatek_nyomtassteis_js($content) {
         global $cmm_session;
-        if ($cmm_session->get('cmm_place') != '') {
+        if (($cmm_session->get('cmm_place') != '') & (!is_admin())) {
     			echo '
     			<script type="text/javascript">
     			jQuery(function() {
@@ -126,7 +186,7 @@ class CoverageController {
     					jQuery("#shipping_postcode").val("0000");
     					jQuery("#shipping_last_name").val("Mézga");
     					jQuery("#shipping_first_name").val("család");
-    				}		
+    				}
     			})		
     			</script>		
     			';
