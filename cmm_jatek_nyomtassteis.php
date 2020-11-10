@@ -35,7 +35,8 @@ add_action('init','cmm_jatek_nyomtassteis_init');
 function cmm_jatek_nyomtassteis_init(){
     global $cmm_session, $cmm_ctrl;
     
-    //+ AJAX backends
+    //+ AJAX backends országkodok és megye kódok lekéréséhez
+    // lásd wp-content/plugins/woocommerce/i18n/states.php
     if (isset($_GET['cmm_get_states'])) {
         echo json_encode( WC()->countries->get_allowed_country_states()[$_GET["cmm_get_states"]]);
         exit();

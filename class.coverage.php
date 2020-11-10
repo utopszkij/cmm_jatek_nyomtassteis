@@ -388,7 +388,12 @@ class CoverageController {
     	$model = $this->model;
     	global $cmm_session;
     	
-    	$result = '';
+    	$result = '<script type="text/javascript">
+    	jQuery(function() {
+    		jQuery(".woocommercer-message .wc-forward").hide();
+    		jQuery(".coupon").hide();
+    	});
+    	</script>';
     	if (!isset($atts['img'])) {
     		$atts['img'] = '';	
     	}
